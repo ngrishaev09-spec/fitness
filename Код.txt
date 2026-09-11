@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Персональная программа тренировок</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    color: #1a1a2e;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .progress-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b35, #ff8c42);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  
+  .card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 32px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: fadeIn 0.4s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .hidden { display: none !important; }
+  
+  .welcome-icon {
+    font-size: 56px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .subtitle {
+    font-size: 15px;
+    color: #555;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  
+  .question-icon {
+    font-size: 40px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  
+  .question-title {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  
+  .question-subtitle {
+    font-size: 14px;
+    color: #777;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #f8f9fc;
+    border: 2px solid #e8ecf3;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1a1a2e;
+    width: 100%;
+  }
+  
+  .option-btn:hover {
+    border-color: #ff6b35;
+    background: #fff5f0;
+    transform: translateY(-2px);
+  }
+  
+  .option-btn.selected {
+    border-color: #ff6b35;
+    background: linear-gradient(135deg, #fff5f0, #ffe8dc);
+  }
+  
+  .option-emoji { font-size: 24px; flex-shrink: 0; }
+  .option-text { flex: 1; }
+  .option-label { font-weight: 600; display: block; }
+  .option-desc { font-size: 13px; color: #888; margin-top: 2px; }
+  
+  .next-btn {
+    width: 100%;
+    padding: 16px;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,53,0.4); }
+  .next-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  
+  /* Result */
+  .result-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .result-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #f0f4ff;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #4a5fc1;
+    font-weight: 600;
+    margin: 4px 4px 0 0;
+  }
+  
+  .result-section {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8f9fc;
+    border-radius: 12px;
+  }
+  
+  .result-section h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #ff6b35;
+  }
+  
+  .result-section p, .result-section li {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #333;
+  }
+  
+  .result-section ul { padding-left: 20px; }
+  .result-section li { margin-bottom: 6px; }
+  
+  .day-block {
+    margin-bottom: 16px;
+    padding: 14px;
+    background: white;
+    border-radius: 10px;
+    border-left: 4px solid #ff6b35;
+  }
+  
+  .day-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  
+  .exercise-item {
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 4px 0;
+    color: #444;
+  }
+  
+  .restart-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 16px;
+    background: #f0f4ff;
+    color: #4a5fc1;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  
+  .restart-btn:hover { background: #e0e8ff; }
+  
+  .warning-note {
+    background: #fff8e6;
+    border-left: 4px solid #f5a623;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #7a5c00;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<script>
+// ============================================================
+// ДАННЫЕ ОПРОСА
+// ============================================================
+const QUESTIONS = [
+  {
+    id: 'goal',
+    icon: '🎯',
+    title: 'Какую вершину будем штурмовать?',
+    subtitle: 'Выбери свою главную цель:',
+    options: [
+      { value: 'Рельеф', emoji: '🔥', label: 'Рельеф', desc: 'Сухое тело, видны мышцы, жир убран' },
+      { value: 'Масса', emoji: '💪', label: 'Масса', desc: 'Объём, широкие плечи, мощное сложение' },
+      { value: 'Сила', emoji: '⚡', label: 'Сила', desc: 'Физически сильнее и выносливее' },
+      { value: 'Здоровье', emoji: '🧘', label: 'Здоровье', desc: 'Осанка, гибкость, самочувствие' }
+    ]
+  },
+  {
+    id: 'bodyType',
+    icon: '🧐',
+    title: 'Как выглядит твоё тело сейчас?',
+    subtitle: 'Будь честен — я подстроюсь под тебя:',
+    options: [
+      { value: 'Худой', emoji: '🦴', label: 'Худой', desc: 'Мало веса, мышц почти нет' },
+      { value: 'Обычный', emoji: '🏃', label: 'Обычный', desc: 'Среднее телосложение, есть небольшой живот' },
+      { value: 'Плотный', emoji: '🏋️', label: 'Плотный', desc: 'Мышцы есть, жир тоже' },
+      { value: 'Лишний вес', emoji: '⚖️', label: 'Лишний вес', desc: 'Значительный избыток веса' }
+    ]
+  },
+  {
+    id: 'inventory',
+    icon: '🧳',
+    title: 'Что у тебя есть дома?',
+    subtitle: 'Коврик есть во всех вариантах:',
+    options: [
+      { value: 'kovrik', emoji: '🧘', label: 'Только коврик', desc: 'Только вес тела' },
+      { value: 'ganteli', emoji: '🏋️', label: 'Только гантели', desc: 'Гантели + коврик' },
+      { value: 'turnik', emoji: '💪', label: 'Брусья/турник', desc: 'Турник/брусья + коврик (без гантелей)' },
+      { value: 'vse', emoji: '🏆', label: 'Всё есть', desc: 'Гантели + турник/брусья + резинки' }
+    ]
+  },
+  {
+    id: 'level',
+    icon: '📊',
+    title: 'Как часто ты тренируешься?',
+    subtitle: 'Будь честен — я подстроюсь:',
+    options: [
+      { value: 'Начальный', emoji: '🍼', label: 'Начальный', desc: 'Почти не тренировался' },
+      { value: 'Средний', emoji: '⚡', label: 'Средний', desc: 'Тренируюсь иногда, база есть' },
+      { value: 'Продвинутый', emoji: '🔥', label: 'Продвинутый', desc: 'Регулярно, высокая нагрузка' }
+    ]
+  },
+  {
+    id: 'time',
+    icon: '⏱️',
+    title: 'Сколько минут в день?',
+    subtitle: 'Говори как есть:',
+    options: [
+      { value: '15-20', emoji: '⏱️', label: '15–20 мин', desc: '' },
+      { value: '30-40', emoji: '⏱️', label: '30–40 мин', desc: '' },
+      { value: '45-60', emoji: '⏱️', label: '45–60 мин', desc: '' },
+      { value: '60+', emoji: '⏱️', label: '60+ мин', desc: '' }
+    ]
+  },
+  {
+    id: 'frequency',
+    icon: '🗓️',
+    title: 'Сколько раз в неделю?',
+    subtitle: 'Лучше честно, чем красиво:',
+    options: [
+      { value: '2', emoji: '2️⃣', label: '2 раза', desc: 'ПН / ЧТ' },
+      { value: '3', emoji: '3️⃣', label: '3 раза', desc: 'ПН / СР / ПТ' },
+      { value: '4-5', emoji: '4️⃣', label: '4–5 раз', desc: 'ПН / ВТ / ЧТ / ПТ' },
+      { value: '7', emoji: '🔥', label: 'Каждый день', desc: 'Чередование силовых и кардио' }
+    ]
+  },
+  {
+    id: 'restrictions',
+    icon: '🩺',
+    title: 'Есть травмы или ограничения?',
+    subtitle: 'Можно выбрать несколько:',
+    multi: true,
+    options: [
+      { value: 'Спина', emoji: '❌', label: 'Спина / поясница', desc: '' },
+      { value: 'Колени', emoji: '❌', label: 'Колени', desc: '' },
+      { value: 'Плечи', emoji: '❌', label: 'Плечи / локти', desc: '' },
+      { value: 'Шея', emoji: '❌', label: 'Шея', desc: '' },
+      { value: 'Нет', emoji: '✅', label: 'Ограничений нет', desc: '' }
+    ]
+  }
+];
+
+// ============================================================
+// БАЗА УПРАЖНЕНИЙ
+// ============================================================
+const EXERCISES = {
+  kovrik: {
+    day1: {
+      focus: 'Спина + Бицепс',
+      nach: ['Тяга лопаток (ретракция) в упоре лёжа на коленях', '«Лодочка» — руки вдоль тела', 'Сгибания рук без веса'],
+      sred: ['Тяга лопаток с паузой 2 с', '«Лодочка» — руки вперёд', 'Сгибания рук с резиной'],
+      prod: ['Тяга лопаток с отягощением на спине', '«Лодочка» — руки за головой', 'Сгибания рук с паузой 2 с']
+    },
+    day2: {
+      focus: 'Грудь + Трицепс',
+      nach: ['Отжимания от стены', 'Отжимания от стены (узкая постановка)', 'Разгибания рук без веса'],
+      sred: ['Отжимания с колен', 'Отжимания с колен (узкая постановка)', 'Разгибания рук с резиной'],
+      prod: ['Классические отжимания', 'Отжимания узким хватом', 'Французский жим с гантелей']
+    },
+    day3: {
+      focus: 'Ноги + Пресс',
+      nach: ['Приседания у стены', 'Выпады на месте', 'Планка на коленях — 15–20 с', 'Скручивания (руки вдоль тела)'],
+      sred: ['Классические приседания', 'Выпады вперёд', 'Планка классическая — 30 с', 'Скручивания (руки за головой)'],
+      prod: ['Приседания на одной ноге', 'Болгарские выпады', 'Планка с подъёмом ноги — 30–40 с', 'Скручивания с подъёмом ног']
+    }
+  },
+  ganteli: {
+    day1: {
+      focus: 'Спина + Бицепс',
+      nach: ['Тяга гантели в наклоне с опорой', '«Лодочка» с гантелями', 'Сгибания рук с гантелями сидя'],
+      sred: ['Тяга гантели в наклоне', '«Лодочка» с гантелями вперёд', 'Сгибания рук с гантелями стоя'],
+      prod: ['Тяга гантели с паузой', '«Лодочка» с гантелями за головой', 'Сгибания рук с паузой 2 с']
+    },
+    day2: {
+      focus: 'Грудь + Трицепс',
+      nach: ['Жим гантелей лёжа (лёгкий вес)', 'Разведения гантелей лёжа', 'Разгибания рук с гантелью сидя'],
+      sred: ['Жим гантелей лёжа', 'Разведения гантелей лёжа', 'Разгибания рук с гантелью стоя'],
+      prod: ['Жим гантелей с паузой', 'Разведения с паузой', 'Французский жим с паузой']
+    },
+    day3: {
+      focus: 'Ноги + Пресс',
+      nach: ['Приседания с гантелями у груди', 'Выпады с гантелями на месте', 'Планка на коленях', 'Скручивания с гантелью на груди'],
+      sred: ['Приседания с гантелями', 'Выпады с гантелями вперёд', 'Планка классическая', 'Скручивания с гантелью за головой'],
+      prod: ['Приседания на одной ноге с гантелью', 'Болгарские выпады с гантелями', 'Планка с подъёмом ноги', 'Скручивания с гантелью прямыми руками']
+    }
+  },
+  turnik: {
+    day1: {
+      focus: 'Спина + Бицепс',
+      nach: ['Подтягивания с резиной', 'Австралийские подтягивания', 'Вис на турнике 20 с'],
+      sred: ['Подтягивания классические', 'Австралийские подтягивания с паузой', 'Вис на турнике 40 с'],
+      prod: ['Подтягивания с отягощением', 'Подтягивания узким хватом', 'Вис на турнике с отягощением']
+    },
+    day2: {
+      focus: 'Грудь + Трицепс',
+      nach: ['Отжимания от стены', 'Отжимания на брусьях с резиной', 'Отжимания узким хватом с колен'],
+      sred: ['Отжимания с колен', 'Отжимания на брусьях', 'Отжимания узким хватом'],
+      prod: ['Классические отжимания', 'Отжимания на брусьях с отягощением', 'Отжимания узким хватом с ногами на возвышении']
+    },
+    day3: {
+      focus: 'Ноги + Пресс',
+      nach: ['Приседания у стены', 'Выпады на месте', 'Подъёмы ног в висе (согнутые)', 'Скручивания'],
+      sred: ['Классические приседания', 'Выпады вперёд', 'Подъёмы ног в висе (прямые)', 'Скручивания с подъёмом ног'],
+      prod: ['Приседания на одной ноге', 'Болгарские выпады', 'Подъёмы ног до перекладины', 'Скручивания с отягощением']
+    }
+  },
+  vse: {
+    day1: {
+      focus: 'Спина + Бицепс',
+      nach: ['Тяга гантели в наклоне с опорой', 'Подтягивания с резиной', 'Сгибания рук с гантелями'],
+      sred: ['Тяга гантели в наклоне', 'Подтягивания классические', 'Сгибания рук с гантелями стоя'],
+      prod: ['Тяга гантели с паузой', 'Подтягивания с отягощением', 'Сгибания рук с паузой']
+    },
+    day2: {
+      focus: 'Грудь + Трицепс',
+      nach: ['Жим гантелей лёжа (лёгкий)', 'Отжимания на брусьях с резиной', 'Разгибания рук с гантелью'],
+      sred: ['Жим гантелей лёжа', 'Отжимания на брусьях', 'Французский жим'],
+      prod: ['Жим гантелей с паузой', 'Отжимания на брусьях с отягощением', 'Французский жим с паузой']
+    },
+    day3: {
+      focus: 'Ноги + Пресс',
+      nach: ['Приседания с гантелями', 'Выпады с гантелями', 'Планка', 'Скручивания с гантелью'],
+      sred: ['Приседания с гантелями', 'Выпады вперёд', 'Планка с подъёмом ноги', 'Скручивания с подъёмом ног'],
+      prod: ['Приседания на одной ноге', 'Болгарские выпады', 'Подъёмы ног в висе', 'Скручивания с отягощением']
+    }
+  }
+};
+
+// ============================================================
+// ПАРАМЕТРЫ НАГРУЗКИ ПО ЦЕЛИ И УРОВНЮ
+// ============================================================
+const LOAD_PARAMS = {
+  'Рельеф': {
+    'Начальный': { sets: 2, reps: '12–15', rest: '45–60' },
+    'Средний': { sets: 3, reps: '15–20', rest: '30–45' },
+    'Продвинутый': { sets: 4, reps: '15–20', rest: '30' }
+  },
+  'Масса': {
+    'Начальный': { sets: 3, reps: '8–10', rest: '60–90' },
+    'Средний': { sets: 3, reps: '10–12', rest: '60' },
+    'Продвинутый': { sets: 4, reps: '8–12', rest: '60–90' }
+  },
+  'Сила': {
+    'Начальный': { sets: 3, reps: '6–8', rest: '90–120' },
+    'Средний': { sets: 4, reps: '5–6', rest: '120' },
+    'Продвинутый': { sets: 5, reps: '4–6', rest: '120–180' }
+  },
+  'Здоровье': {
+    'Начальный': { sets: 2, reps: '10–12', rest: '60' },
+    'Средний': { sets: 3, reps: '10–15', rest: '45–60' },
+    'Продвинутый': { sets: 3, reps: '12–15', rest: '45' }
+  }
+};
+
+// ============================================================
+// ПИТАНИЕ
+// ============================================================
+const DIET_ADVICE = {
+  'Рельеф': 'Создайте дефицит 300–500 ккал в день. Белок — 1,5–1,7 г/кг. Углеводы — 3–5 г/кг. Сократите быстрые сахара и насыщенные жиры.',
+  'Масса': 'Создайте профицит 300–500 ккал в день. Белок — 1,5–1,7 г/кг. Углеводы — 5–6 г/кг. Жиры — 25–30% калорийности.',
+  'Сила': 'Белок — 1,5–1,7 г/кг. Углеводы — 4–5 г/кг. Жиры — 20–30%. Обеспечьте достаточное потребление калорий для восстановления.',
+  'Здоровье': 'Сбалансированное питание: белок — 1,2 г/кг, углеводы — 3–5 г/кг, жиры — 25–30%. Больше овощей, фруктов, цельнозерновых.'
+};
+
+const CARDIO_ADVICE = {
+  'Худой': 'Минимум кардио — 1–2 раза в неделю по 15–20 минут. Не тратьте лишние калории.',
+  'Обычный': 'Кардио 2–3 раза в неделю по 20–30 минут.',
+  'Плотный': 'Кардио 3–4 раза в неделю по 25–30 минут.',
+  'Лишний вес': 'Кардио 4–5 раз в неделю по 30–40 минут. Начинайте с ходьбы, избегайте ударной нагрузки.'
+};
+
+// ============================================================
+// СОСТОЯНИЕ
+// ============================================================
+let currentStep = 0;
+let answers = {};
+let multiSelected = [];
+
+// ============================================================
+// РЕНДЕР
+// ============================================================
+const app = document.getElementById('app');
+const progressFill = document.getElementById('progressFill');
+
+function updateProgress() {
+  const total = QUESTIONS.length;
+  const pct = (currentStep / total) * 100;
+  progressFill.style.width = pct + '%';
+}
+
+function renderWelcome() {
+  updateProgress();
+  app.innerHTML = `
+    <div class="card">
+      <div class="welcome-icon">👋</div>
+      <h1>Привет!</h1>
+      <p class="subtitle">
+        Я подберу тебе персональную программу тренировок.<br>
+        Ты не просто проходишь опрос — мы вместе собираем твой будущий план.<br><br>
+        Готов? Поехали! 🚀
+      </p>
+      <button class="next-btn" onclick="startQuiz()">Начать опрос</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  currentStep = 0;
+  answers = {};
+  multiSelected = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  updateProgress();
+  const q = QUESTIONS[currentStep];
+  const isMulti = q.multi || false;
+  
+  if (isMulti) multiSelected = [];
+  
+  app.innerHTML = `
+    <div class="card">
+      <div class="question-icon">${q.icon}</div>
+      <div class="question-title">${q.title}</div>
+      <div class="question-subtitle">${q.subtitle}</div>
+      <div class="options" id="options">
+        ${q.options.map((opt, i) => `
+          <button class="option-btn" onclick="selectOption(${i})" data-index="${i}">
+            <span class="option-emoji">${opt.emoji}</span>
+            <span class="option-text">
+              <span class="option-label">${opt.label}</span>
+              ${opt.desc ? `<span class="option-desc">${opt.desc}</span>` : ''}
+            </span>
+          </button>
+        `).join('')}
+      </div>
+      ${isMulti ? '<button class="next-btn" id="nextBtn" onclick="confirmMulti()" disabled>Далее</button>' : ''}
+    </div>
+  `;
+}
+
+function selectOption(index) {
+  const q = QUESTIONS[currentStep];
+  const opt = q.options[index];
+  
+  if (q.multi) {
+    if (opt.value === 'Нет') {
+      multiSelected = ['Нет'];
+    } else {
+      multiSelected = multiSelected.filter(v => v !== 'Нет');
+      if (multiSelected.includes(opt.value)) {
+        multiSelected = multiSelected.filter(v => v !== opt.value);
+      } else {
+        multiSelected.push(opt.value);
+      }
+    }
+    
+    document.querySelectorAll('.option-btn').forEach((btn, i) => {
+      const val = q.options[i].value;
+      btn.classList.toggle('selected', multiSelected.includes(val));
+    });
+    
+    document.getElementById('nextBtn').disabled = multiSelected.length === 0;
+  } else {
+    answers[q.id] = opt.value;
+    document.querySelectorAll('.option-btn').forEach((btn, i) => {
+      btn.classList.toggle('selected', i === index);
+    });
+    
+    setTimeout(() => {
+      currentStep++;
+      if (currentStep < QUESTIONS.length) {
+        renderQuestion();
+      } else {
+        renderResult();
+      }
+    }, 250);
+  }
+}
+
+function confirmMulti() {
+  answers.restrictions = multiSelected;
+  currentStep++;
+  if (currentStep < QUESTIONS.length) {
+    renderQuestion();
+  } else {
+    renderResult();
+  }
+}
+
+// ============================================================
+// ГЕНЕРАЦИЯ ПРОГРАММЫ
+// ============================================================
+function renderResult() {
+  updateProgress();
+  progressFill.style.width = '100%';
+  
+  const { goal, bodyType, inventory, level, time, frequency, restrictions } = answers;
+  const program = EXERCISES[inventory];
+  const params = LOAD_PARAMS[goal][level];
+  const levelKey = level === 'Начальный' ? 'nach' : level === 'Средний' ? 'sred' : 'prod';
+  
+  // Расписание
+  let schedule = '';
+  if (frequency === '2') schedule = 'ПН / ЧТ';
+  else if (frequency === '3') schedule = 'ПН / СР / ПТ';
+  else if (frequency === '4-5') schedule = 'ПН / ВТ / ЧТ / ПТ';
+  else schedule = 'ПН / ВТ / СР / ЧТ / ПТ / СБ';
+  
+  // Дни
+  const dayNames = { '2': 'Понедельник', '3': 'Понедельник', '4-5': 'Понедельник', '7': 'Понедельник' };
+  
+  const days = [
+    { key: 'day1', name: 'Понедельник' },
+    { key: 'day2', name: 'Среда' },
+    { key: 'day3', name: 'Пятница' }
+  ];
+  
+  // Если частота 2 раза — убираем день 2
+  const activeDays = frequency === '2' ? [days[0], days[2]] : days;
+  
+  // Инвентарь название
+  const invNames = { kovrik: 'Коврик', ganteli: 'Гантели', turnik: 'Брусья/турник', vse: 'Всё есть' };
+  
+  // Предупреждение об ограничениях
+  let restrictionNote = '';
+  if (restrictions && restrictions.length > 0 && !restrictions.includes('Нет')) {
+    restrictionNote = `
+      <div class="warning-note">
+        ⚠️ Учтены твои ограничения: ${restrictions.join(', ')}. 
+        Исключи упражнения, вызывающие боль. При сомнениях — проконсультируйся с врачом.
+      </div>
+    `;
+  }
+  
+  // Программа по дням
+  const daysHtml = activeDays.map(day => {
+    const dayData = program[day.key];
+    const exercises = dayData[levelKey];
+    return `
+      <div class="day-block">
+        <div class="day-title">📌 ${day.name} — ${dayData.focus}</div>
+        ${exercises.map(ex => `
+          <div class="exercise-item">• ${ex} — ${params.sets} подхода × ${params.reps}, отдых ${params.rest} сек</div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+  
+  // Дополнительные дни
+  let additionalDays = '';
+  if (frequency === '2') {
+    additionalDays = `<p style="font-size:14px; color:#888; margin-top:8px;">При 2 тренировках в неделю мы пропускаем день Грудь+Трицепс. Через месяц можно перейти на 3 тренировки.</p>`;
+  } else if (frequency === '4-5') {
+    additionalDays = `<p style="font-size:14px; color:#888; margin-top:8px;">В пятницу повтори день 1 (Спина+Бицепс) с лёгкой нагрузкой.</p>`;
+  } else if (frequency === '7') {
+    additionalDays = `<p style="font-size:14px; color:#888; margin-top:8px;">Чередуй: День 1 (силовой) → День 2 (кардио/растяжка) → День 3 (силовой) → День 4 (кардио/растяжка).</p>`;
+  }
+  
+  app.innerHTML = `
+    <div class="card">
+      <div class="result-header">
+        <div class="welcome-icon">🎉</div>
+        <h1>Твоя программа готова!</h1>
+        <div>
+          <span class="result-badge">${goal}</span>
+          <span class="result-badge">${invNames[inventory]}</span>
+          <span class="result-badge">${level}</span>
+          <span class="result-badge">${bodyType}</span>
+        </div>
+      </div>
+      
+      ${restrictionNote}
+      
+      <div class="result-section">
+        <h3>📅 Расписание</h3>
+        <p><strong>${schedule}</strong></p>
+        <p>Время тренировки: <strong>${time} мин</strong></p>
+      </div>
+      
+      <div class="result-section">
+        <h3>🏋️ Основная часть</h3>
+        ${daysHtml}
+        ${additionalDays}
+      </div>
+      
+      <div class="result-section">
+        <h3>🍽️ Питание</h3>
+        <p>${DIET_ADVICE[goal]}</p>
+      </div>
+      
+      <div class="result-section">
+        <h3>💪 Кардио</h3>
+        <p>${CARDIO_ADVICE[bodyType]}</p>
+      </div>
+      
+      <div class="result-section">
+        <h3>📈 Прогрессия</h3>
+        <p>Когда выполняешь все повторения в 2 тренировках подряд — добавь 1–2 повторения или 1–2 кг. Если техника ломается — снизь нагрузку.</p>
+      </div>
+      
+      <button class="restart-btn" onclick="startQuiz()">Пройти заново</button>
+    </div>
+  `;
+}
+
+// ============================================================
+// СТАРТ
+// ============================================================
+renderWelcome();
+</script>
+</body>
+</html>
